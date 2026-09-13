@@ -1,0 +1,13 @@
+import type { ChallengeDay, DayStatus } from '../domain/challenge';
+import { DailyHabitCard } from '../components/DailyHabitCard';
+import { NextActionCard } from '../components/NextActionCard';
+import { ProgressBar } from '../components/ProgressBar';
+
+type Checkin = 'walking' | 'boxing' | 'water';
+export function TodayPage({ day, status, onToggleMeal, onToggleCheckin, onOpenWorkout }: { day: ChallengeDay; status: DayStatus; onToggleMeal: (id: string) => void; onToggleCheckin: (type: Checkin) => void; onOpenWorkout: () => void }) {
+  const mealsDone = day.meals.filter((meal) => meal.items.every((item) => item.isComplete)).length;
+  const areasDone = [status.dietComplete, status.strengthComplete, status.walkingComplete, status.boxingComplete, status.waterComplete].filter(Boolean).length;
+  const pendingMeal = day.meals.find((meal) => !meal.items.every((item) => item.isComplete));
+  const next = pendingMeal ? { title: pendingMeal.name, action: `Marcar ${pendingMeal.name}`, onClick: () => onToggleMeal(pendingMeal.items[0].id) } : !status.strengthComplete ? { title: 'Musculação ABC', action: 'Abrir treino', onClick: onOpenWorkout } : !status.walkingComplete ? { title: 'Caminhada', action: 'Concluir caminhada', onClick: () => onToggleCheckin('walking') } : !status.boxingComplete ? { title: 'Boxe', action: 'Concluir boxe', onClick: () => onToggleCheckin('boxing') } : !status.waterComplete ? { title: 'Meta de água', action: 'Concluir meta de água', onClick: () => onToggleCheckin('water') } : null;
+  return <section className="today-page"><ProgressBar value={areasDone} total={5} label={`${areasDone} de 5 áreas concluídas`} />{next ? <NextActionCard {...next} /> : <section className="day-complete"><span>✓</span><h2>Dia concluído</h2><p>Você fechou todas as áreas de hoje.</p></section>}<section className="habit-list"><h2>Seu dia</h2><DailyHabitCard label="Dieta" detail={`${mealsDone} de 3 refeições`} done={status.dietComplete} onClick={() => pendingMeal && onToggleMeal(pendingMeal.items[0].id)} /><DailyHabitCard label="Musculação ABC" detail={status.strengthComplete ? 'Concluído' : 'Ver treino'} done={status.strengthComplete} onClick={onOpenWorkout} /><DailyHabitCard label="Caminhada" detail={status.walkingComplete ? 'Concluído' : 'Pendente'} done={status.walkingComplete} onClick={() => onToggleCheckin('walking')} /><DailyHabitCard label="Boxe" detail={status.boxingComplete ? 'Concluído' : 'Pendente'} done={status.boxingComplete} onClick={() => onToggleCheckin('boxing')} /><DailyHabitCard label="Meta de água" detail={status.waterComplete ? 'Concluído' : 'Pendente'} done={status.waterComplete} onClick={() => onToggleCheckin('water')} /></section></section>;
+}
